@@ -1,0 +1,29 @@
+version: "3.3"
+
+services:
+  sessions:
+    container_name: act-sessions
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    networks:
+      - backend
+    depends_on:
+      - sessions-db
+
+  sessions-db:
+    container_name: act-sessions-db
+    image: amazon/dynamodb-local
+    restart: always
+    networks:
+      - backend
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath ./data
+    ports:
+      - 8000:8000
+    volumes:
+      - ./docker/dynamodb:/home/dynamodblocal/data
+    working_dir: /home/dynamodblocal
+
+networks:
+  backend:
