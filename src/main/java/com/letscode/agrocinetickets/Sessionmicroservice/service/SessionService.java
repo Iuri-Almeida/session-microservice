@@ -20,7 +20,7 @@ public class SessionService {
         return null;
     }
 
-    public Flux<SessionResponse> findSessions() {
+    public Flux<SessionResponse> fetchSessions() {
         // TODO sessionRepository.findAll();
         return null;
     }
@@ -47,6 +47,36 @@ public class SessionService {
 
     public Mono<SessionResponse> modifySession(String id) {
         //TODO SessionsRepository.modifySession(id)
+        return null;
+    }
+
+    public Mono<SessionResponse> modifySessionEntirely(String id) {
+        //TODO SessionsRepository.modifySessionEntirely(id)
+        return null;
+    }
+
+    public Mono<?> deleteSession(String id) {
+        //TODO SessionsRepository.deleteSession(id)
+        return null;
+    }
+
+    public Mono<SessionResponse> occupySeat(String id, int line, int column) {
+        //TODO SessionsRepository.occupySeat(id, line, column)
+        return null;
+    }
+
+    public Mono<SessionResponse> verifySeat(String id, int line, int column) {
+        //TODO SessionsRepository.verifySeat(id, line, column)
+        return null;
+    }
+
+    public Mono<SessionResponse> vacateSeat(String id, int line, int column) {
+        //TODO SessionsRepository.vacateSeat(id, line, column)
+        return null;
+    }
+
+    public Mono<SessionResponse> fetchSessionSeats(String id) {
+        //TODO SessionsRepository.fetchSessionSeats(id)
         return null;
     }
 }
