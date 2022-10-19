@@ -18,67 +18,67 @@ public class SessionController {
 
     @PostMapping
     public ResponseEntity<Mono<SessionResponse>> createSession(@RequestBody SessionRequest sessionRequest) {
-        return null;
+        return ResponseEntity.ok(sessionService.createSession(sessionRequest));
     }
 
     @GetMapping
-    public ResponseEntity<Flux<SessionResponse>> retrieveSessions() {
-        return null;
+    public ResponseEntity<Flux<SessionResponse>> fetchSessions() {
+        return ResponseEntity.ok(sessionService.fetchSessions());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Mono<SessionResponse>> findSession(@PathVariable("id") String id) {
-        return null;
+        return ResponseEntity.ok(sessionService.findSession(id));
     }
 
     @GetMapping
     public ResponseEntity<Flux<SessionResponse>> findSessionsByRoom(@RequestParam("roomId") String roomId) {
-        return null;
+        return ResponseEntity.ok(sessionService.findSessionsByRoom(roomId));
     }
 
     @GetMapping
     public ResponseEntity<Flux<SessionResponse>> findSessionsByTime(@RequestParam("time") String timeId) {
-        return null;
+        return ResponseEntity.ok(sessionService.findSessionsByTime(timeId));
     }
 
     @GetMapping
     public ResponseEntity<Flux<SessionResponse>> findSessionsByMovie(@RequestParam("movieId") String movieId) {
-        return null;
+        return ResponseEntity.ok(sessionService.findSessionsByMovie(movieId));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<Mono<SessionResponse>> modifySession(@PathVariable("id") String id) {
-        return null;
+        return ResponseEntity.ok(sessionService.modifySession(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Mono<SessionResponse>> modifySessionEntirely(@PathVariable("id") String id) {
-        return null;
+        return ResponseEntity.ok(sessionService.modifySessionEntirely(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteSession(@PathVariable("id") String id) {
-        return null;
+        return ResponseEntity.ok(sessionService.deleteSession(id));
     }
 
     @PatchMapping("/{id}/occupySeat")
     public ResponseEntity<Mono<SessionResponse>> occupySeat(@PathVariable("id") String id, @RequestParam("line") int line, @RequestParam("column") int column) {
-        return null;
+        return ResponseEntity.ok(sessionService.occupySeat(id, line, column));
     }
 
     @GetMapping("/{id}/isSeatOccupied")
     public ResponseEntity<Mono<SessionResponse>> verifySeat(@PathVariable("id") String id, @RequestParam("line") int line, @RequestParam("column") int column) {
-        return null;
+        return ResponseEntity.ok(sessionService.verifySeat(id, line, column));
     }
 
     @PatchMapping("/{id}/vacateSeat")
     public ResponseEntity<Mono<SessionResponse>> vacateSeat(@PathVariable("id") String id, @RequestParam("line") int line, @RequestParam("column") int column) {
-        return null;
+        return ResponseEntity.ok(sessionService.vacateSeat(id, line, column));
     }
 
     @GetMapping("/{id}/seats")
-    public ResponseEntity<Mono<SessionResponse>> retrieveSessionSeats(@PathVariable("id") String id) {
-        return null;
+    public ResponseEntity<Mono<SessionResponse>> fetchSessionSeats(@PathVariable("id") String id) {
+        return ResponseEntity.ok(sessionService.fetchSessionSeats(id));
     }
 
 }
