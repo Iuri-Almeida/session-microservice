@@ -1,6 +1,7 @@
 package com.letscode.agrocinetickets.Sessionmicroservice.controller;
 
 import com.letscode.agrocinetickets.Sessionmicroservice.model.Result;
+import com.letscode.agrocinetickets.Sessionmicroservice.model.dto.SeatsSessionResponse;
 import com.letscode.agrocinetickets.Sessionmicroservice.model.dto.SessionRequest;
 import com.letscode.agrocinetickets.Sessionmicroservice.model.dto.SessionResponse;
 import com.letscode.agrocinetickets.Sessionmicroservice.service.SessionService;
@@ -64,25 +65,25 @@ public class SessionController {
     public ResponseEntity<Mono<Result>> deleteSession(@PathVariable("id") String id) {
         return ResponseEntity.ok(sessionService.deleteSession(id));
     }
+
+    @PatchMapping("/{id}/occupySeat/{seatNumber}")
+    public ResponseEntity<Mono<Result>> occupySeat(@PathVariable("id") String id, @PathVariable("seatNumber") int seatNumber) {
+        return ResponseEntity.ok(sessionService.occupySeat(id,seatNumber));
+    }
 //
-//    @PatchMapping("/{id}/occupySeat")
-//    public ResponseEntity<Mono<SessionResponse>> occupySeat(@PathVariable("id") String id, @RequestParam("line") int line, @RequestParam("column") int column) {
-//        return ResponseEntity.ok(sessionService.occupySeat(id, line, column));
-//    }
-//
-//    @GetMapping("/{id}/isSeatOccupied")
-//    public ResponseEntity<Mono<SessionResponse>> verifySeat(@PathVariable("id") String id, @RequestParam("line") int line, @RequestParam("column") int column) {
-//        return ResponseEntity.ok(sessionService.verifySeat(id, line, column));
-//    }
-//
-//    @PatchMapping("/{id}/vacateSeat")
-//    public ResponseEntity<Mono<SessionResponse>> vacateSeat(@PathVariable("id") String id, @RequestParam("line") int line, @RequestParam("column") int column) {
-//        return ResponseEntity.ok(sessionService.vacateSeat(id, line, column));
-//    }
-//
-//    @GetMapping("/{id}/seats")
-//    public ResponseEntity<Mono<SessionResponse>> fetchSessionSeats(@PathVariable("id") String id) {
-//        return ResponseEntity.ok(sessionService.fetchSessionSeats(id));
-//    }
+    @GetMapping("/{id}/isSeatOccupied/{seatNumber}")
+    public ResponseEntity<Boolean> verifySeat(@PathVariable("id") String id, @PathVariable("seatNumber") int seatNumber) {
+        return ResponseEntity.ok(sessionService.verifySeat(id, seatNumber));
+    }
+
+    @PatchMapping("/{id}/vacateSeat/{seatNumber}")
+    public ResponseEntity<Mono<Result>> vacateSeat(@PathVariable("id") String id, @PathVariable("seatNumber") int seatNumber) {
+        return ResponseEntity.ok(sessionService.vacateSeat(id, seatNumber));
+    }
+
+    @GetMapping("/{id}/seats")
+    public ResponseEntity<Mono<SeatsSessionResponse>> fetchSessionSeats(@PathVariable("id") String id) {
+        return ResponseEntity.ok(sessionService.fetchSessionSeats(id));
+    }
 
 }

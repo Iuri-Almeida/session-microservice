@@ -1,21 +1,22 @@
 package com.letscode.agrocinetickets.Sessionmicroservice.service;
 
 import com.letscode.agrocinetickets.Sessionmicroservice.model.Result;
+import com.letscode.agrocinetickets.Sessionmicroservice.model.SeatOccupied;
 import com.letscode.agrocinetickets.Sessionmicroservice.model.Session;
+import com.letscode.agrocinetickets.Sessionmicroservice.model.dto.SeatsSessionResponse;
 import com.letscode.agrocinetickets.Sessionmicroservice.model.dto.SessionRequest;
 import com.letscode.agrocinetickets.Sessionmicroservice.model.dto.SessionResponse;
 import com.letscode.agrocinetickets.Sessionmicroservice.repository.SessionRepository;
 import com.letscode.agrocinetickets.Sessionmicroservice.util.mapper.SessionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class SessionService {
         session.setId(UUID.randomUUID().toString());
 
         return Mono.fromFuture(sessionRepository.save(session))
-                .thenReturn(Result.SUCESS)
+                .thenReturn(Result.SUCCESS)
                 .onErrorReturn(Result.FAIL);
     }
 
@@ -61,7 +62,7 @@ public class SessionService {
                 .map(sessionMapper::modelToResponse);
     }
 
-    public Flux<SessionResponse> findSessionsByMovie( String movieId) {
+    public Flux<SessionResponse> findSessionsByMovie(String movieId) {
         return Flux.from(sessionRepository.findByMovie(movieId).items())
                 .map(sessionMapper::modelToResponse)
                 .doOnError(RuntimeException::new);
@@ -80,27 +81,74 @@ public class SessionService {
     public Mono<Result> deleteSession(String id) {
         return Mono.fromFuture(sessionRepository.deleteById(id))
                 .doOnSuccess(Objects::requireNonNull)
-                .thenReturn(Result.SUCESS)
+                .thenReturn(Result.SUCCESS)
                 .onErrorReturn(Result.FAIL);
     }
 
-    public Mono<SessionResponse> occupySeat(String id, int line, int column) {
-        //TODO SessionsRepository.occupySeat(id, line, column)
-        return null;
+    public Mono<Result> occupySeat(String id, int seatNumber) {
+        Session session = getModelById(id);
+
+        if (session.getSeats().containsKey(seatNumber) && !session.getSeats().get(seatNumber)) {
+            session.getSeats().put(seatNumber, SeatOccupied.TRUE.getOccupied());
+        }
+
+        return Mono.fromFuture(sessionRepository.save(session))
+                .thenReturn(Result.SUCCESS)
+                .onErrorReturn(Result.FAIL);
     }
 
-    public Mono<SessionResponse> verifySeat(String id, int line, int column) {
-        //TODO SessionsRepository.verifySeat(id, line, column)
-        return null;
+    public Boolean verifySeat(String id, int seatNumber) {
+        Session session = getModelById(id);
+        if (session.getSeats().containsKey(seatNumber)) {
+            return session.getSeats().get(seatNumber);
+        }
+        return false;
     }
 
-    public Mono<SessionResponse> vacateSeat(String id, int line, int column) {
-        //TODO SessionsRepository.vacateSeat(id, line, column)
-        return null;
+    public Mono<Result> vacateSeat(String id, int seatNumber) {
+        Session session = getModelById(id);
+
+        if (session.getSeats().containsKey(seatNumber) && !session.getSeats().get(seatNumber)) {
+            session.getSeats().put(seatNumber, SeatOccupied.FALSE.getOccupied());
+        }
+
+        return Mono.fromFuture(sessionRepository.save(session))
+                .thenReturn(Result.SUCCESS)
+                .onErrorReturn(Result.FAIL);
     }
 
-    public Mono<SessionResponse> fetchSessionSeats(String id) {
-        //TODO SessionsRepository.fetchSessionSeats(id)
-        return null;
+    public Mono<SeatsSessionResponse> fetchSessionSeats(String id) {
+
+        return Mono.fromFuture(sessionRepository.findById(id))
+                .doOnSuccess(Objects::requireNonNull)
+                .doOnError(RuntimeException::new)
+                .map(session -> {
+                    SeatsSessionResponse seatsSessionResponse = new SeatsSessionResponse();
+                    seatsSessionResponse.setSeats(session.getSeats());
+                    int free = 0;
+                    int occupied = 0;
+
+                    for (int i = 1; i <= session.getSeats().size(); i++) {
+                        if (session.getSeats().get(i)) {
+                            free++;
+                        } else {
+                            occupied++;
+                        }
+                    }
+
+                    seatsSessionResponse.setSeatsFree(free);
+                    seatsSessionResponse.setSeatsOccupied(occupied);
+
+                    return seatsSessionResponse;
+                });
+
+    }
+
+    private Session getModelById(String id) {
+        try {
+            return sessionRepository.findById(id).get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
