@@ -15,5 +15,4 @@ public class SessionResponse {
     private Room room;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private Map<Integer, Boolean> seats;
 }

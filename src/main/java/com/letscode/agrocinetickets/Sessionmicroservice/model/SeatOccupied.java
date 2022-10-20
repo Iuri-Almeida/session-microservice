@@ -1,7 +1,7 @@
 package com.letscode.agrocinetickets.Sessionmicroservice.model;
 
 public enum SeatOccupied {
-    TRUE(true), FALSE(true);
+    TRUE(true), FALSE(false);
 
     private final Boolean occupied;
 

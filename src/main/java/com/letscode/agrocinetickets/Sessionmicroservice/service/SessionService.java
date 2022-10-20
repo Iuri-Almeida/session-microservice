@@ -14,9 +14,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,8 @@ public class SessionService {
     public Mono<Result> createSession(SessionRequest sessionRequest) {
         Session session = sessionMapper.requestToModel(sessionRequest);
         session.setId(UUID.randomUUID().toString());
+        session.setSeats(new HashMap<>());
+        IntStream.rangeClosed(1,sessionRequest.getSeatsNumber()).forEach(num -> session.getSeats().put(num, false));
 
         return Mono.fromFuture(sessionRepository.save(session))
                 .thenReturn(Result.SUCCESS)
@@ -108,7 +113,7 @@ public class SessionService {
     public Mono<Result> vacateSeat(String id, int seatNumber) {
         Session session = getModelById(id);
 
-        if (session.getSeats().containsKey(seatNumber) && !session.getSeats().get(seatNumber)) {
+        if (session.getSeats().containsKey(seatNumber) && session.getSeats().get(seatNumber)) {
             session.getSeats().put(seatNumber, SeatOccupied.FALSE.getOccupied());
         }
 
@@ -130,9 +135,9 @@ public class SessionService {
 
                     for (int i = 1; i <= session.getSeats().size(); i++) {
                         if (session.getSeats().get(i)) {
-                            free++;
-                        } else {
                             occupied++;
+                        } else {
+                            free++;
                         }
                     }
 

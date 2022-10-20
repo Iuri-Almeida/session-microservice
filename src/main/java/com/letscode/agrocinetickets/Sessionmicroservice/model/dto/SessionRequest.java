@@ -16,6 +16,6 @@ public class SessionRequest {
     private Room room;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private Map<Integer, Boolean> seats;
+    private Integer seatsNumber;
 }
 
