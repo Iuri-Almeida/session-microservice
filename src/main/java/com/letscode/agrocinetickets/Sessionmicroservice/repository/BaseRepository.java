@@ -1,44 +1,36 @@
 package com.letscode.agrocinetickets.Sessionmicroservice.repository;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import lombok.RequiredArgsConstructor;
+import software.amazon.awssdk.enhanced.dynamodb.*;
+import software.amazon.awssdk.enhanced.dynamodb.model.PagePublisher;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
-@RequiredArgsConstructor
-public abstract class BaseRepository<T,K> {
-    protected final DynamoDBMapper dynamoDBMapper;
+public abstract class BaseRepository<T, K> {
+    protected final DynamoDbAsyncTable<T> dynamoDbAsyncTable;
 
-    public T save(T obj) {
-        dynamoDBMapper.save(obj);
-        return obj;
+    public BaseRepository(DynamoDbEnhancedAsyncClient enhancedAsyncClient) {
+        this.dynamoDbAsyncTable = enhancedAsyncClient.table(getEntityName(), TableSchema.fromBean(getClassType()));
     }
 
-    public void deleteById(K id) {
-        dynamoDBMapper.delete(findById(id));
+    public CompletableFuture<Void> save(T obj) {
+        dynamoDbAsyncTable.putItem(obj);
+        return dynamoDbAsyncTable.putItem(obj);
     }
 
-    public T findById(K id) {
-        return Optional.ofNullable(dynamoDBMapper.load(getClassType(), getEntityName(), id))
-                .orElseThrow(RuntimeException::new); //ItemNaoEncontradoException::new
+    public CompletableFuture<T> findById(K id) {
+        return dynamoDbAsyncTable.getItem(getKeyBuild(id));
     }
 
-    public List<T> findAll() {
+    public CompletableFuture<T> updateById(T obj) {
+        return dynamoDbAsyncTable.updateItem(obj);
+    }
 
-        Map<String, AttributeValue> eav = new HashMap<>();
+    public CompletableFuture<T> deleteById(K id) {
+        return dynamoDbAsyncTable.deleteItem(getKeyBuild(id));
+    }
 
-        eav.put(":val1", new AttributeValue().withS(getEntityName()));
-
-        DynamoDBQueryExpression<T> queryExpression = new DynamoDBQueryExpression<T>()
-                .withKeyConditionExpression("tipo = :val1")
-                .withExpressionAttributeValues(eav);
-
-        return dynamoDBMapper.query(getClassType(), queryExpression);
+    public PagePublisher<T> findAll() {
+        return dynamoDbAsyncTable.scan();
     }
 
     protected abstract Class<T> getClassType();
@@ -46,4 +38,6 @@ public abstract class BaseRepository<T,K> {
     public String getEntityName() {
         return getClassType().getSimpleName().toLowerCase();
     }
+
+    protected abstract Key getKeyBuild(K id);
 }

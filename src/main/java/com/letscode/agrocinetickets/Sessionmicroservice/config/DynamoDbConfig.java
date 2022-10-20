@@ -1,65 +1,48 @@
 package com.letscode.agrocinetickets.Sessionmicroservice.config;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
-import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.letscode.agrocinetickets.Sessionmicroservice.model.Session;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.dynamodb.model.ListTablesResponse;
+
+import java.net.URI;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Configuration
 public class DynamoDbConfig {
 
-    @Value("${aws.access.key.id}")
-    private String awsAccessKeyId;
-    @Value("${aws.access.key.secret}")
-    private String awsAcessKeySecret;
-    @Value("${dynamodb.service.endpoint}")
-    private String dynamoDBServiceEndPoint;
-    @Value("${dynamodb.service.region")
-    private String dynamoDBRegion;
+    @Value("${aws.dynamodb.endpoint}")
+    private String dynamoDbEndPointUrl;
+
+    @Value("${dynamodb.service.region}")
+    private String dynamoDbRegion;
 
     @Bean
-    public DynamoDBMapper dynamoDBMapper(AmazonDynamoDB amazonDynamoDB) {
-        return new DynamoDBMapper(amazonDynamoDB);
-    }
-
-    @Bean
-    public AmazonDynamoDB amazonDynamoDB() {
-        return AmazonDynamoDBClientBuilder
-                .standard()
-                .withEndpointConfiguration(endpointConfiguration())
-                .withCredentials(awsCredentialsProvider())
+    public DynamoDbAsyncClient getDynamoDbAsyncClient() {
+        return DynamoDbAsyncClient.builder()
+                .credentialsProvider(StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create("FAKE", "FAKE")))
+                .region(Region.of(dynamoDbRegion))
+                .endpointOverride(URI.create(dynamoDbEndPointUrl))
                 .build();
     }
 
-    private AWSCredentialsProvider awsCredentialsProvider() {
-        return new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsAccessKeyId,awsAcessKeySecret));
-    }
-
-    private AwsClientBuilder.EndpointConfiguration endpointConfiguration() {
-        return new AwsClientBuilder.EndpointConfiguration(dynamoDBServiceEndPoint, dynamoDBRegion);
-    }
-
-    @EventListener(ApplicationReadyEvent.class)
-    public void setupDB(ApplicationReadyEvent event) {
-        AmazonDynamoDB amazonDynamoDB = event.getApplicationContext().getBean(AmazonDynamoDB.class);
-        DynamoDBMapper dynamoDBMapper = event.getApplicationContext().getBean(DynamoDBMapper.class);
-
-        CreateTableRequest createTableRequestTarefas = dynamoDBMapper.generateCreateTableRequest(Session.class);
-
-        if (!amazonDynamoDB.listTables().getTableNames().contains(createTableRequestTarefas.getTableName())) {
-            createTableRequestTarefas.setProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
-            amazonDynamoDB.createTable(createTableRequestTarefas);
-        }
+    @Bean
+    public DynamoDbEnhancedAsyncClient getDynamoDbEnhancedAsyncClient(DynamoDbAsyncClient dynamoDbAsyncClient) {
+        return DynamoDbEnhancedAsyncClient.builder()
+                .dynamoDbClient(dynamoDbAsyncClient)
+                .build();
     }
 }

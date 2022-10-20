@@ -1,21 +1,40 @@
 package com.letscode.agrocinetickets.Sessionmicroservice.repository;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.letscode.agrocinetickets.Sessionmicroservice.model.Session;
 import org.springframework.stereotype.Repository;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
+import software.amazon.awssdk.enhanced.dynamodb.Expression;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.PagePublisher;
+import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Repository
 public class SessionRepository extends BaseRepository<Session, String> {
 
-    public SessionRepository(DynamoDBMapper dynamoDBMapper) {
-        super(dynamoDBMapper);
+    public SessionRepository(DynamoDbEnhancedAsyncClient enhancedAsyncClient) {
+        super(enhancedAsyncClient);
+    }
+
+    public PagePublisher<Session> findByMovie(String movieId) {
+        Map<String, AttributeValue> expVal = new HashMap<>();
+        expVal.put(":val1", AttributeValue.builder().s(movieId).build());
+        Expression exp = Expression.builder().expression("movie.id = :val1").expressionValues(expVal).build();
+        ScanEnhancedRequest req = ScanEnhancedRequest.builder().filterExpression(exp).build();
+
+        return dynamoDbAsyncTable.scan(req);
+    }
+
+    public PagePublisher<Session> findByRoom(String roomId) {
+        Map<String, AttributeValue> expVal = new HashMap<>();
+        expVal.put(":val1", AttributeValue.builder().s(roomId).build());
+        Expression exp = Expression.builder().expression("room.id = :val1").expressionValues(expVal).build();
+        ScanEnhancedRequest req = ScanEnhancedRequest.builder().filterExpression(exp).build();
+
+        return dynamoDbAsyncTable.scan(req);
     }
 
     @Override
@@ -23,17 +42,8 @@ public class SessionRepository extends BaseRepository<Session, String> {
         return Session.class;
     }
 
-    public List<Session> findSessionsByRoom(String roomId) {
-
-        Map<String, AttributeValue> eav = new HashMap<>();
-
-        eav.put(":val1", new AttributeValue().withS(getEntityName()));
-        eav.put(":val2", new AttributeValue().withS(roomId));
-
-        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
-                .withFilterExpression("tipo = :val1")
-                .withExpressionAttributeValues(eav);
-
-        return dynamoDBMapper.scan(getClassType(),scanExpression);
+    @Override
+    protected Key getKeyBuild(String id) {
+        return Key.builder().partitionValue(id).build();
     }
 }
