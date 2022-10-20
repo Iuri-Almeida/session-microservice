@@ -6,6 +6,7 @@ import lombok.Data;
 
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -14,6 +15,7 @@ public class SessionRequest {
     private Movie movie;
     private Room room;
     private LocalDateTime startTime;
-    private boolean[][] seats;
+    private LocalDateTime endTime;
+    private Map<Integer, Boolean> seats;
 }
 

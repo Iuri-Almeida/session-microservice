@@ -7,7 +7,6 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 @Data
 public class Movie {
     private String id;
-    private String type;
     private String title;
     private Long year;
     private Long runtime;

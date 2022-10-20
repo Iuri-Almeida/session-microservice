@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
@@ -38,12 +39,12 @@ public class SessionController {
     public ResponseEntity<Flux<SessionResponse>> findSessionsByRoom(@PathVariable String roomId) {
         return ResponseEntity.ok(sessionService.findSessionsByRoom(roomId));
     }
-//
-//    @GetMapping
-//    public ResponseEntity<Flux<SessionResponse>> findSessionsByTime(@RequestParam("time") String timeId) {
-//        return ResponseEntity.ok(sessionService.findSessionsByTime(timeId));
-//    }
-//
+
+    @GetMapping("/time")
+    public ResponseEntity<Flux<SessionResponse>> findSessionsByTime(@RequestParam("time") String time) {
+        return ResponseEntity.ok(sessionService.findSessionsByTime(LocalDateTime.parse(time)));
+    }
+
     @GetMapping("/movie/{movieId}")
     public ResponseEntity<Flux<SessionResponse>> findSessionsByMovie(@PathVariable String movieId) {
         return ResponseEntity.ok(sessionService.findSessionsByMovie(movieId));
@@ -60,7 +61,7 @@ public class SessionController {
 //    }
 //
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteSession(@PathVariable("id") String id) {
+    public ResponseEntity<Mono<Result>> deleteSession(@PathVariable("id") String id) {
         return ResponseEntity.ok(sessionService.deleteSession(id));
     }
 //

@@ -9,6 +9,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.PagePublisher;
 import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,18 +21,30 @@ public class SessionRepository extends BaseRepository<Session, String> {
     }
 
     public PagePublisher<Session> findByMovie(String movieId) {
-        Map<String, AttributeValue> expVal = new HashMap<>();
-        expVal.put(":val1", AttributeValue.builder().s(movieId).build());
-        Expression exp = Expression.builder().expression("movie.id = :val1").expressionValues(expVal).build();
+        Expression exp = Expression.builder().expression("movie.id = :val1")
+                .expressionValues(
+                        Map.of(":val1", AttributeValue.builder().s(movieId).build())
+                ).build();
         ScanEnhancedRequest req = ScanEnhancedRequest.builder().filterExpression(exp).build();
 
         return dynamoDbAsyncTable.scan(req);
     }
 
     public PagePublisher<Session> findByRoom(String roomId) {
-        Map<String, AttributeValue> expVal = new HashMap<>();
-        expVal.put(":val1", AttributeValue.builder().s(roomId).build());
-        Expression exp = Expression.builder().expression("room.id = :val1").expressionValues(expVal).build();
+        Expression exp = Expression.builder().expression("room.id = :val1")
+                .expressionValues(
+                        Map.of(":val1", AttributeValue.builder().s(roomId).build())
+                ).build();
+        ScanEnhancedRequest req = ScanEnhancedRequest.builder().filterExpression(exp).build();
+
+        return dynamoDbAsyncTable.scan(req);
+    }
+
+    public PagePublisher<Session> findByTime(LocalDateTime time) {
+        Expression exp = Expression.builder().expression("startTime <= :val1 and endTime >= :val1 ")
+                .expressionValues(
+                        Map.of(":val1", AttributeValue.builder().s(time.toString()).build())
+                ).build();
         ScanEnhancedRequest req = ScanEnhancedRequest.builder().filterExpression(exp).build();
 
         return dynamoDbAsyncTable.scan(req);

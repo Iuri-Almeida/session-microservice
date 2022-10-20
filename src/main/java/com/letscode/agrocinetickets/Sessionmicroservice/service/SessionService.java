@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
@@ -25,7 +26,6 @@ public class SessionService {
 
     public Mono<Result> createSession(SessionRequest sessionRequest) {
         Session session = sessionMapper.requestToModel(sessionRequest);
-        session.setType(sessionRepository.getEntityName());
         session.setId(UUID.randomUUID().toString());
 
         return Mono.fromFuture(sessionRepository.save(session))
@@ -55,9 +55,10 @@ public class SessionService {
                 .doOnError(RuntimeException::new);
     }
 
-    public Flux<SessionResponse> findSessionsByTime(@RequestParam("time") String timeId) {
-        // TODO sessionsRepository.findByTime(roomId);
-        return null;
+    public Flux<SessionResponse> findSessionsByTime(LocalDateTime time) {
+        return Flux.from(sessionRepository.findByTime(time).items())
+                .doOnError(RuntimeException::new)
+                .map(sessionMapper::modelToResponse);
     }
 
     public Flux<SessionResponse> findSessionsByMovie( String movieId) {

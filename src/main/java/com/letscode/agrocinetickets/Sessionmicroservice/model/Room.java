@@ -7,6 +7,5 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 @Data
 public class Room {
     private String id;
-    private String type;
     private String roomType;
 }
